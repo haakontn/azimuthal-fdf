@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/713919474.svg)](https://zenodo.org/doi/10.5281/zenodo.10071466)
+
 # Saturation of flames to multiple inputs at one frequency
 
 This code was written as part of the article *Saturation of flames to multiple inputs at one frequency* by H. T. Nygård, G. Ghirardo, and N. A. Worth [1], extending the stochastic quaternion valued model first developed by Ghirardo and Gant [2, 3] by introducing the Azimuthal Flame Describing Function (AFDF) [4].
