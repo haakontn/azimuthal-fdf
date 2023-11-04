@@ -2,6 +2,7 @@ use crate::azimuthal_mode::Mode;
 use crate::Float;
 use serde::{Deserialize, Serialize};
 
+/// Possible errors for [`Parameters`].
 #[derive(Clone, Debug)]
 pub enum ParametersError {
     Timestep,

@@ -1,12 +1,15 @@
 use std::path::PathBuf;
 
 use super::{ObserverTrait, SaveInfo};
-use crate::{azimuthal_mode::SystemMode, DescribingFunction, Float, Parameters, PI};
+use crate::azimuthal_mode::SystemMode;
+use crate::hrr_integral::DescribingFunction;
+use crate::{Float, Parameters, PI};
 use hdf5;
 use ndarray;
 use serde::{Deserialize, Serialize};
 use serde_json;
 
+/// Histogram observer.
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct HistogramObserver {
     pub save_info: SaveInfo,

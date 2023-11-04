@@ -8,8 +8,9 @@ use std::io::BufReader;
 use std::path::PathBuf;
 use std::time;
 
+use crate::hrr_integral::DescribingFunction;
 use crate::observers::{Observer, ObserverTrait, SaveInfo};
-use crate::{DescribingFunction, Float, Parameters, ParametersError, Quaternion, Saturation};
+use crate::{Float, Parameters, ParametersError, Quaternion, Saturation};
 
 /// Struct containing most of the data from [`Settings`] for saving purposes.
 ///
@@ -46,6 +47,7 @@ impl SaveData {
     }
 }
 
+/// All the settings of the simulation.
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct Settings {
     pub parameters: Parameters,

@@ -1,5 +1,6 @@
 use crate::Float;
 
+/// Fourier series component.
 #[derive(Debug)]
 pub struct Fourier {
     pub amplitude: Float,
@@ -39,8 +40,8 @@ impl Fourier {
     /// coefficients used to create the signal back.
     ///
     /// ```
-    /// use rust_azimuthal_fdf::{Float, PI};
-    /// use rust_azimuthal_fdf::Fourier;
+    /// use azimuthal_fdf::{Float, PI};
+    /// use azimuthal_fdf::Fourier;
     ///
     /// let n_points = 12;
     /// let dtheta = 2.0 * PI / (n_points as Float);

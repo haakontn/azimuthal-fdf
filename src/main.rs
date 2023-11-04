@@ -1,12 +1,11 @@
 use std::path::PathBuf;
 use std::time::SystemTime;
 
+use azimuthal_fdf::hrr_integral::{self, DescribingFunction};
+use azimuthal_fdf::observers::{self, Observer, ObserverTrait, SaveInfo};
+use azimuthal_fdf::{Parameters, Saturation, SaveData, Settings};
 use clap::Parser;
 use rayon::prelude::*;
-use azimuthal_fdf::observers::{self, Observer, ObserverTrait, SaveInfo};
-use azimuthal_fdf::{
-    hrr_integral, DescribingFunction, Parameters, Saturation, SaveData, Settings,
-};
 
 fn main() {
     let cli_arguments = CliParser::parse();

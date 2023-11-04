@@ -1,3 +1,5 @@
+//! Observers used for logging the [`crate::azimuthal_mode::Mode`].
+
 mod histogram;
 mod timeseries;
 
@@ -6,11 +8,14 @@ use std::path::PathBuf;
 pub use histogram::HistogramObserver;
 pub use timeseries::TimeSeriesObserver;
 
-use crate::{azimuthal_mode::SystemMode, DescribingFunction, Float, Parameters};
+use crate::azimuthal_mode::SystemMode;
+use crate::hrr_integral::DescribingFunction;
+use crate::{Float, Parameters};
 use hdf5::{H5Type, Location};
 use ndarray::{arr0, ArrayView};
 use serde::{Deserialize, Serialize};
 
+/// Possible errors for [`SaveInfo`].
 #[derive(Debug)]
 pub enum ObserverError {
     DirectoryNotFound(String),
@@ -44,6 +49,7 @@ pub trait ObserverTrait: std::fmt::Display {
     ) -> hdf5::Result<()>;
 }
 
+/// Wrapper for the structs implementing [`ObserverTrait`].
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub enum Observer {
     TimeSeries(TimeSeriesObserver),
@@ -128,6 +134,7 @@ impl Default for Observer {
     }
 }
 
+/// Information of where the results will be saved.
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct SaveInfo {
     path: PathBuf,

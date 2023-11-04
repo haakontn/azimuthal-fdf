@@ -1,3 +1,8 @@
+//! Heat release rate integral from the main equation.
+//!
+//! This is where the heat release rate integral is evaluated, making it
+//! relatively straight forward to implement other heat release rate integrals
+//! into the model without changing the resut of the codebase.
 mod conventional;
 mod simplified;
 
@@ -7,11 +12,13 @@ pub use conventional::ConventionalFDF;
 use serde::{Deserialize, Serialize};
 pub use simplified::AFDFSimplified;
 
+/// Used to implement the heat release rate integral.
 pub trait HeatReleaseRate {
     fn integral(&self, acoustic_mode: &SystemMode, setup: &Settings) -> Quaternion;
     fn mode(&self, acoustic_mode: &SystemMode) -> SystemMode;
 }
 
+/// Wrapper for the different structs implementing the [`HeatReleaseRate`] trait.
 #[derive(Clone, Copy, Debug, Deserialize, Serialize)]
 pub enum DescribingFunction {
     Conventional(ConventionalFDF),
@@ -42,7 +49,7 @@ impl Default for DescribingFunction {
 
 // Calculate the local amplitude at each flame location.
 #[inline]
-pub fn local_amplitudes(mode: &SystemMode, parameters: &Parameters) -> Vec<Float> {
+fn local_amplitudes(mode: &SystemMode, parameters: &Parameters) -> Vec<Float> {
     let mode_order = parameters.mode_order;
     parameters
         .get_thetas()

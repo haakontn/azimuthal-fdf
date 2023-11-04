@@ -3,6 +3,12 @@ use crate::azimuthal_mode::SystemMode;
 use crate::{Float, Fourier, Quaternion, Settings};
 use serde::{Deserialize, Serialize};
 
+/// Simplified version of the Azimuthal Flame Describing Function (AFDF).
+///
+/// This is the simplified version of the azimuthal describing function,
+/// which is presented in the main part of the paper. This assumes the
+/// main difference from the conventional flame describing function is
+/// the nature angle dependence of the heat release rate mode.
 #[derive(Copy, Clone, Debug, Deserialize, Serialize)]
 pub struct AFDFSimplified {
     pub gain_ratio_r: Float,

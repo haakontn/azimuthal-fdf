@@ -3,11 +3,14 @@ use std::str::FromStr;
 
 use super::{ObserverTrait, SaveInfo};
 use crate::azimuthal_mode::SystemMode;
-use crate::hrr_integral::HeatReleaseRate;
-use crate::{DescribingFunction, Float, Parameters};
+use crate::hrr_integral::{DescribingFunction, HeatReleaseRate};
+use crate::{Float, Parameters};
 use hdf5;
 use serde::{Deserialize, Serialize};
 
+/// Time series observer.
+///
+/// Logging time series data at set intervals
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct TimeSeriesObserver {
     pub save_info: SaveInfo,
