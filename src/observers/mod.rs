@@ -18,8 +18,8 @@ use serde::{Deserialize, Serialize};
 /// Possible errors for [`SaveInfo`].
 #[derive(Debug)]
 pub enum ObserverError {
-    DirectoryNotFound(String),
-    GroupAlreadyExist(String),
+    DirectoryNotFound(SaveInfo),
+    GroupAlreadyExist(SaveInfo),
 }
 
 impl std::error::Error for ObserverError {}
@@ -27,10 +27,19 @@ impl std::error::Error for ObserverError {}
 impl std::fmt::Display for ObserverError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let msg = match self {
-            Self::DirectoryNotFound(path) => {
-                format!("Could not find directory of {}", path)
+            Self::DirectoryNotFound(save_info) => {
+                format!(
+                    "Could not find directory of \"{}\"",
+                    save_info.path.to_string_lossy()
+                )
             }
-            Self::GroupAlreadyExist(group_name) => format!("Group {} already exists", group_name),
+            Self::GroupAlreadyExist(save_info) => {
+                format!(
+                    "Group \"{}\" in file \"{}\" already exists",
+                    save_info.group,
+                    save_info.path.to_string_lossy()
+                )
+            }
         };
 
         write!(f, "ObserverError: {}", msg)
@@ -169,9 +178,7 @@ impl SaveInfo {
         // First, check if the directory exists
         let directory = std::path::Path::new(&self.path).parent();
         if let None = directory {
-            return Err(ObserverError::DirectoryNotFound(
-                self.path.to_string_lossy().into_owned(),
-            ));
+            return Err(ObserverError::DirectoryNotFound(self.to_owned()));
         }
 
         // Check if the file already exists
@@ -186,7 +193,7 @@ impl SaveInfo {
         // If the file exists already, make sure the group does not already exist
         match file.group(&self.group) {
             // The group already exists, it will not overwrite the results
-            Ok(_) => Err(ObserverError::GroupAlreadyExist(self.group.to_owned())),
+            Ok(_) => Err(ObserverError::GroupAlreadyExist(self.to_owned())),
             // The group does not already exist, it will write the results in the desired location
             Err(_) => Ok(()),
         }

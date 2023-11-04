@@ -46,7 +46,15 @@ fn main() {
             "Results will be saved to: {}",
             settings.observer.save_info()
         );
-        println!("Simulation started...");
+
+        match settings.observer.save_info().is_valid() {
+            Ok(_) => {}
+            Err(e) => {
+                println!("{}\nSave conflict, aborting simulation", e);
+                return;
+            }
+        }
+
         settings.run();
 
         match settings
