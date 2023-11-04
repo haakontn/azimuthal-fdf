@@ -4,7 +4,7 @@ use std::time::SystemTime;
 use azimuthal_fdf::hrr_integral::{self, DescribingFunction};
 use azimuthal_fdf::observers::{self, Observer, ObserverTrait, SaveInfo};
 use azimuthal_fdf::{Parameters, Saturation, SaveData, Settings};
-use clap::Parser;
+use clap::{CommandFactory, Parser};
 use rayon::prelude::*;
 
 fn main() {
@@ -86,19 +86,6 @@ fn main() {
             .into_par_iter()
             .zip(save_infos)
             .map(|(gain_factor, save_info)| {
-                match save_info.is_valid() {
-                    Ok(_) => {
-                        println!(
-                            "Results will be saved to {}",
-                            save_info.get_path().to_string_lossy(),
-                        );
-                    }
-                    Err(e) => {
-                        println! {"{}\nSkipping simulation, save conflict for {}", e, save_info};
-                        return None;
-                    }
-                }
-
                 // Need to create this inside the parallel iterator
                 // for the RNG initialization to work properly
                 let mut settings = Settings::default();
@@ -108,8 +95,8 @@ fn main() {
                 settings.parameters.noise = 0.06;
 
                 // Set the time step
-                let new_dt = settings.parameters.get_timestep() / 2.0;
-                if let Err(e) = settings.parameters.set_timestep(new_dt) {
+                let new_timestep = settings.parameters.get_timestep() / 2.0;
+                if let Err(e) = settings.parameters.set_timestep(new_timestep) {
                     println!("{}", e);
                 }
 
@@ -123,39 +110,13 @@ fn main() {
                 let describing_function = hrr_integral::DescribingFunction::Conventional(df);
                 settings.describing_function = describing_function;
 
-                // Run the simulation
-                settings.run();
-
-                println!("Finished: {}", save_info.get_group());
-
-                // Transfer ownership of the observer
-                let mut save_data = SaveData::from(settings);
-                save_data.finish_time = SystemTime::now();
-
-                Some(save_data)
+                run_settings(settings)
             })
             .collect();
 
-        // Save the data outside of the parallel loop
-        for sd in save_data {
-            if let Some(sd) = sd {
-                if let Err(e) = sd.save() {
-                    println!("could not save: {}", e);
-                }
-
-                if let Ok(elapsed_time) = sd.finish_time.duration_since(start_time) {
-                    let si = sd.get_save_info();
-                    println!(
-                        "{}: {} took {} seconds",
-                        si.get_path().to_string_lossy(),
-                        si.get_group(),
-                        elapsed_time.as_secs()
-                    );
-                }
-            }
-        }
+        // Save the data outside of the parallel for-loop
+        save(save_data, start_time);
     } else if !cli_arguments.settings_files.is_empty() {
-        // TODO Implement this!
         // Run the simulations related to the reported experiments
         println!("Loading the settings files...");
 
@@ -166,44 +127,31 @@ fn main() {
             for filepath in cli_arguments.settings_files {
                 println!("Loading settings from: {}", filepath);
                 match Settings::from_file(&filepath) {
-                    Ok(settings) => match settings.observer.save_info().is_valid() {
-                        Ok(_) => {
-                            println!(
-                                "Results from {} will be saved to {}",
-                                filepath,
-                                settings.observer.save_info()
-                            );
-                            all_settings.push(settings)
-                        }
-                        Err(e) => {
-                            println! {"{}\nSave conflict for settings in {}, skipping simulation", e, filepath}
-                        }
-                    },
-                    Err(e) => {
-                        println!("could not load settings, {}\nSkipping file {}", e, filepath)
-                    }
+                    Ok(settings) => all_settings.push(settings),
+                    Err(e) => println!(
+                        "{}\ncould not load settings {}, skipping simulation",
+                        e, filepath
+                    ),
                 }
             }
 
-            for mut settings in all_settings {
+            for settings in all_settings {
                 let start_time = SystemTime::now();
 
-                settings.run();
-                let mut save_data = SaveData::from(settings);
-                save_data.finish_time = SystemTime::now();
+                if let Some(save_data) = run_settings(settings) {
+                    if let Err(e) = save_data.save() {
+                        println!("could not save: {}", e);
+                    }
 
-                if let Err(e) = save_data.save() {
-                    println!("could not save: {}", e);
-                }
-
-                if let Ok(elapsed_time) = save_data.finish_time.duration_since(start_time) {
-                    let save_info = save_data.get_save_info();
-                    println!(
-                        "{}: {} took {} seconds",
-                        save_info.get_path().to_string_lossy(),
-                        save_info.get_group(),
-                        elapsed_time.as_secs()
-                    );
+                    if let Ok(elapsed_time) = save_data.finish_time.duration_since(start_time) {
+                        let save_info = save_data.get_save_info();
+                        println!(
+                            "{}: {} took {} seconds",
+                            save_info.get_path().to_string_lossy(),
+                            save_info.get_group(),
+                            elapsed_time.as_secs()
+                        );
+                    }
                 }
             }
         } else {
@@ -215,55 +163,66 @@ fn main() {
                     println!("Loading settings from: {}", filepath);
 
                     match Settings::from_file(&filepath) {
-                        Ok(mut settings) => {
-                            match settings.observer.save_info().is_valid() {
-                                Ok(_) => {
-                                    println!(
-                                    "Results from {} will be saved to {}",
-                                    filepath,
-                                    settings.observer.save_info()
-                                )},
-                                Err(e) => {
-                                    println! {"{}\nSave conflict for settings in {}, skipping simulation", e, filepath}
-                                    return None;
-                                },
-                            }
-
-                            settings.run();
-
-                            let mut save_data = SaveData::from(settings);
-                            save_data.finish_time = SystemTime::now();
-
-                            Some(save_data)
-                        },
+                        Ok(settings) => run_settings(settings),
                         Err(e) => {
                             println!(
                                 "{}\nCould not load {}, the simulation will be skipped",
                                 e, filepath
                             );
                             None
-                        },
+                        }
                     }
                 })
                 .collect();
 
-            // Save the data outside of the parallel loop
-            for sd in save_data {
-                if let Some(sd) = sd {
-                    if let Err(e) = sd.save() {
-                        println!("could not save: {}", e);
-                    }
+            // Save the data outside of the parallel for-loop
+            save(save_data, start_time);
+        }
+    } else {
+        // If no arguments are provided print the help information
+        let mut cmd = CliParser::command();
+        cmd.print_help().unwrap_or_default()
+    }
+}
 
-                    if let Ok(elapsed_time) = sd.finish_time.duration_since(start_time) {
-                        let si = sd.get_save_info();
-                        println!(
-                            "{}: {} took {} seconds",
-                            si.get_path().to_string_lossy(),
-                            si.get_group(),
-                            elapsed_time.as_secs()
-                        );
-                    }
-                }
+/// Shorthand for checking whether there is a save conflict and run the simulation.
+#[inline]
+fn run_settings(mut settings: Settings) -> Option<SaveData> {
+    match settings.observer.save_info().is_valid() {
+        Ok(_) => {
+            println!("Results will be saved to {}", settings.observer.save_info())
+        }
+        Err(e) => {
+            println! {"{}\nSave conflict, skipping simulation {}", e, settings.observer.save_info().get_group()}
+            return None;
+        }
+    }
+
+    settings.run();
+
+    let mut save_data = SaveData::from(settings);
+    save_data.finish_time = SystemTime::now();
+
+    Some(save_data)
+}
+
+/// Shorthand for saving the [`SaveData`] from the different simulations
+#[inline]
+fn save(save_data: Vec<Option<SaveData>>, start_time: SystemTime) {
+    for sd in save_data {
+        if let Some(sd) = sd {
+            if let Err(e) = sd.save() {
+                println!("could not save: {}", e);
+            }
+
+            if let Ok(elapsed_time) = sd.finish_time.duration_since(start_time) {
+                let si = sd.get_save_info();
+                println!(
+                    "{}: {} took {} seconds",
+                    si.get_path().to_string_lossy(),
+                    si.get_group(),
+                    elapsed_time.as_secs()
+                );
             }
         }
     }
