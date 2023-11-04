@@ -211,9 +211,10 @@ fn run_settings(mut settings: Settings) -> Option<SaveData> {
 fn save(save_data: Vec<Option<SaveData>>, start_time: SystemTime) {
     for sd in save_data {
         if let Some(sd) = sd {
-            if let Err(e) = sd.save() {
-                println!("could not save: {}", e);
-            }
+            match sd.save() {
+                Ok(_) => println!("Results were successfully saved to: {}", sd.get_save_info()),
+                Err(e) => println!("could not save: {}", e),
+            };
 
             if let Ok(elapsed_time) = sd.finish_time.duration_since(start_time) {
                 let si = sd.get_save_info();
