@@ -20,18 +20,17 @@ After cloning this repository, the executable program can be compiled and ran us
 ```console
 cargo run --release
 ```
-where the `--release` option turns on more optimization than the standard `cargo build`.
+where the `--release` option turns on more optimization than the standard `cargo run`.
 
 To get a fresh list of all the command line options (also found [here](#command-line-options)), run the command
 ```console
 cargo run --release -- --help
 ```
-
 To run the simulations presented in [1], use the following command
 ```console
 cargo run --release -- --experiment
 ```
-which takes around **1 hour** to complete depending on computer hardware, and assuming the process has at least 5 physical cores.
+which takes around **1 hour** to complete depending on computer hardware, and assuming the processor has at least 5 physical cores.
 To run a shorter demonstration (around 10-20 minutes depending on the system), on a single core, the following command can be used
 ```console
 cargo run --release -- --example
@@ -87,7 +86,7 @@ Options:
 
 ## Custom calling functions
 
-If more programmatic control is desired for setting up and running different simulations, this project can also be imported as a crate to write a `custom main.rs` file.
+If more programmatic control is desired for setting up and running different simulations, this project can also be imported as a crate to write a custom `main.rs` file.
 Please see the current [main.rs](src/main.rs) file for examples on how to set up a simulation from the different components.
 
 ## Minimal example using the `conda` HDF5 library
