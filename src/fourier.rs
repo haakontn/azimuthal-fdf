@@ -96,6 +96,13 @@ impl Fourier {
             cos_term += s * idth.cos();
         }
 
+        // NOTE: This takes care of both having even and odd number of
+        //       elements (thetas.len() is even or odd) as the following
+        //       check use integer division. If we define M = thetas.len(),
+        //       then the special cases are order == M/2 (if M is even) or
+        //       order == (M-1)/2 (if M is odd). However, integer division
+        //       ensures both cases are covered here (i.e. 13u32 / 2u32 == 6u32
+        //       which again is equal to 12u32 / 2u32 == 6u32)
         let pre_factor: Float = if order == thetas.len() as u32 / 2 {
             1.0
         } else {
