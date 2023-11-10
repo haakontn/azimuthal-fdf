@@ -160,7 +160,12 @@ impl RNG {
         let imag_j = self.rng.sample(StandardNormal);
         let imag_k = self.rng.sample(StandardNormal);
 
-        return Quaternion::new(real, imag_i, imag_j, imag_k);
+        return Quaternion {
+            real,
+            imag_i,
+            imag_j,
+            imag_k,
+        };
     }
 }
 

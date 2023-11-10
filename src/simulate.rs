@@ -49,7 +49,12 @@ impl Settings {
         let imag_j = 0.0;
         let imag_k = nd_noise_sq * mode.tan_2chi;
 
-        Quaternion::new(real, imag_i, imag_j, imag_k)
+        Quaternion {
+            real,
+            imag_i,
+            imag_j,
+            imag_k,
+        }
     }
 
     #[inline]

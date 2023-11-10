@@ -71,7 +71,12 @@ impl HeatReleaseRate for AFDFSimplified {
         imag_k += -n0 * delta_chi.sin();
         // imag_k += (sigma.powi(2) / (4.0 * a.powi(2))) * acoustic_mode.tan_2chi;
 
-        Quaternion::new(real, imag_i, imag_j, imag_k)
+        Quaternion {
+            real,
+            imag_i,
+            imag_j,
+            imag_k,
+        }
     }
 
     fn mode(&self, acoustic_mode: &SystemMode) -> SystemMode {
