@@ -142,7 +142,7 @@ cargo run --release -- --help
 
 # References
 
-[1] H. T. Nygård, G. Ghirardo, N. A. Worth "*Saturation of flames to multiple inputs at one frequency*", Journal of Fluid Mechanics, *accepted for publication*.
+[1] [H. T. Nygård, G. Ghirardo, N. A. Worth "*Saturation of flames to multiple inputs at one frequency*", Journal of Fluid Mechanics, 2023;977:A6](https://doi.org/10.1017/jfm.2023.921)
 
 [2] [G. Ghirardo, F. Gant, "*Background noise pushes azimuthal instabilities away from spinning states*", 2019, https://arxiv.org/abs/1904.00213](https://arxiv.org/abs/1904.00213)
 
